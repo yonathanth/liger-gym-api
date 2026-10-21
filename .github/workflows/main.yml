@@ -25,9 +25,11 @@ jobs:
           script: |
             set -e
 
+            # Navigate to backend directory
             mkdir -p ~/apps/ligergym-backend
             cd ~/apps/ligergym-backend
 
+            # Pull latest changes
             if [ -d ".git" ]; then
               echo "Pulling latest changes..."
               git stash
@@ -37,23 +39,23 @@ jobs:
               git clone -b master https://github.com/yonathanth/liger-gym-api.git .
             fi
 
+            # Install dependencies
             echo "Installing dependencies..."
             npm install --force
 
-            echo "Generating Prisma client..."
-            npx prisma generate
-
-            echo "Updating database schema..."
-            npx prisma db push
-
-            echo "Building backend..."
+            # Build NestJS application
+            echo "Building application..."
             npm run build
 
-            echo "Starting/reloading backend on port 4040..."
-            if pm2 describe ligergym-backend > /dev/null 2>&1; then
-              PORT=4040 pm2 restart ligergym-backend --update-env
+            # PM2 Process Management
+            echo "Starting/restarting Liger Gym Backend..."
+
+            if pm2 describe "ligergym-backend" > /dev/null 2>&1; then
+              PORT=4040 pm2 restart "ligergym-backend" --update-env
             else
               PORT=4040 pm2 start npm --name "ligergym-backend" -- start
             fi
 
             pm2 save
+
+            echo "Liger Gym Backend deployed successfully!"
